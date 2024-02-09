@@ -1,0 +1,29 @@
+name: forecasts
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # python dependencies
+  - python=3.12
+  - xarray
+  - dask
+  - numpy
+  - pandas
+  - geopandas
+  - networkx
+  - zarr
+  - fastparquet
+  - s3fs
+  - boto3
+  - netcdf4
+  - cfgrib
+  - eccodes
+  - natsort
+  # system dependencies
+  - awscli  # AWS CLI
+  - nco  # NetCDF Operators
+  - cdo  # Climate Data Operators
+  - gh  # GitHub CLI
+  # pip dependencies
+  - pip:
+      - basininflow==0.14.0
