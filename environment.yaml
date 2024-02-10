@@ -6,20 +6,21 @@ dependencies:
   # python dependencies
   - python=3.12
   - pip
-  - xarray
-  - dask
-  - numpy
-  - pandas
-  - geopandas
-  - networkx
-  - zarr
-  - fastparquet
-  - s3fs
   - boto3
-  - netcdf4
   - cfgrib
+  - dask
   - eccodes
+  - fastparquet
+  - geopandas
   - natsort
+  - netcdf4
+  - networkx
+  - numpy
+  - numcodecs
+  - pandas
+  - s3fs
+  - xarray
+  - zarr
   # system dependencies
   - awscli  # AWS CLI
   - nco  # NetCDF Operators
