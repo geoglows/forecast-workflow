@@ -26,10 +26,11 @@ export YMD
   # if the date available on the s3 bucket is newer than the last downloaded date, download the new data
   # if the date available on the s3 bucket is older or the same as the last downloaded date
 
-mkdirs -p $FC_DIR/$YMD/inflows
-mkdirs -p $FC_DIR/$YMD/namelists
-mkdirs -p $FC_DIR/$YMD/outputs
-mkdirs -p $FC_DIR/$YMD/logs
+mkdirs -p FORECASTS_DIR/$YMD/inflows
+mkdirs -p FORECASTS_DIR/$YMD/namelists
+mkdirs -p FORECASTS_DIR/$YMD/outputs
+mkdirs -p FORECASTS_DIR/$YMD/logs
+mkdirs -p FORECASTS_DIR/$YMD/maptables
 
 # Calculate inflows
 python ../geoglows/prepare_inflows.py
