@@ -1,11 +1,25 @@
 #!/usr/bin/env bash
 
-# create the YMD environment variable and export so the subsequent scripts can also access it
+# Initialize YMD variable with current date
 YMD=$(date +%Y%m%d)
-export YMD
 
-# Activate the environment
-conda activate $CONDA_ENV_NAME
+# get the ymd variable from the --ymd flag on the command line or use the current date
+while getopts "-:" flag; do
+  case "${flag}" in
+    -) case "${OPTARG}" in
+         ymd) YMD="${!OPTIND}"; OPTIND=$((OPTIND + 1)) ;;
+         *) ;;
+       esac
+       ;;
+    *) ;;
+  esac
+done
+
+# Shift to the next argument after processing the flag
+shift $((OPTIND -1))
+
+echo "YMD is set to: $YMD"
+export YMD
 
 # Download the latest IFS grids from s3 bucket
   # compare the last downloaded date, and the date available on the s3 bucket
@@ -27,7 +41,7 @@ python ../geoglows/prepare_namelists.py
 docker exec rapid-docker-rapid python3 /mnt/scripts/runrapid.py --fcdir $FC_DIR/$YMD
 
 # Concatenate and summarize the ensemble outputs
-./postprocess_rapid_outputs.sh -d $OUTPUT_DIR/$YMD
+./postprocess_rapid_outputs.sh -d $OUTPUT_DIR/$YMD/outputs
 
 # Calculate the init files
 python ../geoglows/calculate_inits.py
