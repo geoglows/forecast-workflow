@@ -1,14 +1,15 @@
-import glob
-import os
 import argparse
-import netCDF4
-import xarray as xr
-import pandas as pd
-import natsort
+import glob
 import logging
+import os
 import sys
-
 from multiprocessing import Pool
+
+import netCDF4
+import pandas as pd
+
+FORECASTS_DIR = os.environ['FORECASTS_DIR']
+CONFIGS_DIR = os.environ['CONFIGS_DIR']
 
 
 def rapid_namelist(
@@ -148,7 +149,7 @@ def create_rapid_namelist(vpu_directory: str,
                           file_label: str = None,
                           end_date: str = None,
                           qinit_file: str = None,
-                          qfinal_file: str = None) -> None:
+                          qfinal_file: str = None, ) -> None:
     vpu_code = os.path.basename(vpu_directory)
     k_file = os.path.join(vpu_directory, f'k.csv')
     x_file = os.path.join(vpu_directory, f'x.csv')
@@ -205,24 +206,26 @@ def create_rapid_namelist(vpu_directory: str,
     return
 
 
+def call_make_namelist(kwargs_dict: dict):
+    create_rapid_namelist(**kwargs_dict)
+
+
 if __name__ == '__main__':
     """
     Prepare rapid namelist files for a directory of VPU inputs
     """
     argparser = argparse.ArgumentParser()
     argparser.add_argument('--ymd', type=str, required=True)
-    argparser.add_argument('--basedir', type=str, default='/mnt')
-    argparser.add_argument('--dockerpaths', action='store_true', default=False)
     args = argparser.parse_args()
 
-    base_dir = args.basedir
-    dockerpaths = args.dockerpaths
+    ymd = args.ymd
 
-    base_dir = base_dir[:-1] if base_dir.endswith('/') else base_dir
-    vpu_dirs = os.path.join(base_dir, 'inputs')
-    inflows_dir = os.path.join(base_dir, 'inflows')
-    namelists_dir = os.path.join(base_dir, 'namelists')
-    outputs_dir = os.path.join(base_dir, 'outputs')
+    inflows_dir = os.path.join(FORECASTS_DIR, ymd, 'inflows')
+    namelists_dir = os.path.join(FORECASTS_DIR, ymd, 'namelists')
+    outputs_dir = os.path.join(FORECASTS_DIR, ymd, 'outputs')
+
+    os.makedirs(namelists_dir, exist_ok=True)
+    os.makedirs(outputs_dir, exist_ok=True)
 
     logging.basicConfig(
         level=logging.DEBUG,
@@ -232,18 +235,18 @@ if __name__ == '__main__':
 
     jobs = []
 
-    all_vpu_dirs = sorted([x for x in glob.glob(os.path.join(vpu_dirs, '*')) if os.path.isdir(x)])
-    all_inflow_files = sorted([x for x in glob.glob(os.path.join(inflows_dir, '*')) if os.path.isfile(x)])
-    for vpu_dir in all_vpu_dirs:
-        inflow_dir = os.path.join(inflows_dir, os.path.basename(vpu_dir))
-        namelist_dir = os.path.join(namelists_dir, os.path.basename(vpu_dir))
-        output_dir = os.path.join(outputs_dir, os.path.basename(vpu_dir))
+    vpu_dirs = sorted([x for x in glob.glob(os.path.join(CONFIGS_DIR, '*')) if os.path.isdir(x)])
+    for vpu_dir in vpu_dirs:
+        vpu = os.path.basename(vpu_dir)
+        for inflow in glob.glob(os.path.join(inflows_dir, f'm3_{vpu}_*.nc')):
+            print(inflow)
+            jobs.append([{
+                "vpu_directory": vpu_dir,
+                "inflow_file": inflow,
+                "namelist_directory": namelists_dir,
+                "outputs_directory": outputs_dir,
+                "file_label": os.path.splitext(inflow)[0].split('_')[-1],
+            }, ])
 
-        create_rapid_namelist(vpu_directory=vpu_dir, inflow_file='', namelist_directory='', outputs_directory=output_dir)
-
-    if dockerpaths and base_dir != '/mnt':
-        for file in glob.glob(os.path.join(namelists_dir, '*', 'namelist*')):
-            with open(file, 'r') as f:
-                text = f.read().replace(base_dir, '/mnt')
-            with open(file, 'w') as f:
-                f.write(text)
+    with Pool(min(len(jobs), os.cpu_count())) as p:
+        p.starmap(call_make_namelist, jobs)
