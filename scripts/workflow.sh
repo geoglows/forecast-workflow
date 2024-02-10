@@ -13,10 +13,10 @@ YMD=$(date +%Y%m%d)
 export YMD
 
 # Calculate inflows
-python geoglows/prepare_inflows.py
+python ../geoglows/prepare_inflows.py
 
 # Prepare namelists
-python geoglows/prepare_namelists.py
+python ../geoglows/prepare_namelists.py
 
 # RAPID routing
 docker run -d \
@@ -30,19 +30,19 @@ docker run -d \
   chdavid/rapid:latest
 
 # Concatenate and summarize the ensemble outputs
-./scripts/postprocess_rapid_outputs.sh -d $OUTPUT_DIR/$YMD
+./postprocess_rapid_outputs.sh -d $OUTPUT_DIR/$YMD
 
 # Calculate the init files
-python geoglows/calculate_inits.py
+python ../geoglows/calculate_inits.py
 
 # NetCDF to Zarr (and delete netCDFs)
-python geoglows/netcdf_ensembles_to_zarr.py
+python ../geoglows/netcdf_ensembles_to_zarr.py
 
 # Generate Esri map style tables
-python geoglows/generate_map_style_tables.py
+python ../geoglows/generate_map_style_tables.py
 
 # Archive inits, outputs, map tables
-./scripts/archive_to_aws.sh
+./archive_to_aws.sh
 
 # Deactivate the environment
 conda deactivate
