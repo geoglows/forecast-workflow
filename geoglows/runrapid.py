@@ -10,24 +10,24 @@ def timestamp():
     return datetime.datetime.utcnow().strftime('%Y-%m-%d %X')
 
 
-def run_rapid_for_namelist_directory(namelist_dir: str,
-                                     logdir: str,
-                                     path_rapid_exec: str = '/home/rapid/src/rapid', ) -> None:
-    vpuno = os.path.basename(namelist_dir).split("_")[1]
-    with open(os.path.join(logdir, f"{vpuno}.log"), 'w') as f:
-        for namelist in sorted(glob.glob(os.path.join(namelist_dir, '*namelist*'))):
-            try:
-                f.write(f'{timestamp()}: Running RAPID for {namelist}')
-                subprocess.call(
-                    [path_rapid_exec, '--namelist', namelist, '--ksp_type', 'preonly'],
-                    stdout=f,
-                    stderr=f,
-                )
-                f.write(f'{timestamp()}: Finished RAPID for {namelist}')
-            except Exception as e:
-                print(e)
-                f.write(e)
-                f.write(f'Failed to run RAPID for {namelist}')
+def run_rapid_for_namelist_file(namelist_file: str,
+                                logdir: str,
+                                path_rapid_exec: str = '/home/rapid/src/rapid', ) -> None:
+    vpuno = os.path.basename(namelist_file).split("_")[1]
+    label = os.path.basename(namelist_file).split("_")[2]
+    try:
+        with open(os.path.join(logdir, f"{vpuno}_{label}.log"), 'w') as f:
+            f.write(f'{timestamp()}: Running RAPID for {namelist_file}')
+            subprocess.call(
+                [path_rapid_exec, '--namelist', namelist_file, '--ksp_type', 'preonly'],
+                stdout=f,
+                stderr=f,
+            )
+            f.write(f'{timestamp()}: Finished RAPID for {namelist_file}')
+    except Exception as e:
+        print(e)
+        f.write(e)
+        f.write(f'Failed to run RAPID for {namelist_file}')
 
     return
 
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     with Pool(cpu_count) as p:
         print('Beginning RAPID runs')
         for f in namelist_files:
-            p.apply_async(run_rapid_for_namelist_directory, args=(f, logs_dir, path_to_rapid_exec, ))
+            p.apply_async(run_rapid_for_namelist_file, args=(f, logs_dir, path_to_rapid_exec,))
         p.close()
         p.join()
         print('Finished RAPID runs')

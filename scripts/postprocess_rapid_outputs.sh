@@ -3,9 +3,10 @@
 # Function to check if files exist
 check_files_exist() {
   local files=("$@")
+  # if all files exist return 0, else return 1
   for file in "${files[@]}"; do
-    if [[ ! -e "$file" ]]; then
-      echo "Error: File $file not found."
+    if [[ ! -f "$file" ]]; then
+      echo "File $file does not exist"
       return 1
     fi
   done
@@ -37,15 +38,9 @@ for vpu_number in "${vpu_numbers[@]}"; do
   avg_output_file="nces_avg_${vpu_number}.nc"
   concat_output_file="Qout_${vpu_number}.nc"
 
-  # check if the files exist
-  if check_files_exist "$avg_output_file" "$concat_output_file"; then
-    echo "Skipping VPU number $vpu_number due to missing files."
-    continue
-  fi
-
   # calculate the ensemble mean
   echo "Calculating ensemble mean for VPU number $vpu_number"
-  nces $(ls -1 Qout_${vpu_number}_*.nc | grep -v Qout_${vpu_number}_52.nc | sort -V) -O --op_typ=avg -o $avg_output_file ||
+  nces $(ls -1 Qout_${vpu_number}_*.nc | grep -v Qout_${vpu_number}*_52.nc | sort -V) -O --op_typ=avg -o "$avg_output_file" ||
     if [[ $? -ne 0 ]]; then
       echo "Failed to calculate ensemble mean for VPU number $vpu_number"
       continue
@@ -53,7 +48,7 @@ for vpu_number in "${vpu_numbers[@]}"; do
 
   # concatenate along a new dimension which is called record by default
   echo "Concatenating Ensembles 1-51 for VPU number $vpu_number"
-  ncecat $(ls -1 Qout_${vpu_number}_*.nc | grep -v Qout_${vpu_number}_52.nc | sort -V) -O $output_file ||
+  ncecat $(ls -1 Qout_${vpu_number}_*.nc | grep -v Qout_${vpu_number}*_52.nc | sort -V) -O "$concat_output_file" ||
     if [[ $? -ne 0 ]]; then
       echo "Failed to concatenate ensembles 1-51 for VPU number $vpu_number"
       continue
@@ -61,7 +56,7 @@ for vpu_number in "${vpu_numbers[@]}"; do
 
   # rename record to ensemble inplace
   echo "Renaming record to ensemble for VPU number $vpu_number"
-  ncrename -d record,ensemble $output_file ||
+  ncrename -d record,ensemble "$concat_output_file" ||
     if [[ $? -ne 0 ]]; then
       echo "Failed to rename record to ensemble for VPU number $vpu_number"
       continue
@@ -69,7 +64,7 @@ for vpu_number in "${vpu_numbers[@]}"; do
 
   # remove the files Qout_${vpu_number}_*.nc
   echo "Removing individual ensemble files for VPU number $vpu_number"
-  files_to_delete=($(ls -1 Qout_${vpu_number}_*.nc | grep -v Qout_${vpu_number}_52.nc | sort -V))
+  files_to_delete=($(ls -1 Qout_${vpu_number}_*.nc | grep -v Qout_${vpu_number}*_52.nc | sort -V))
   if check_files_exist "${files_to_delete[@]}"; then
     for file in "${files_to_delete[@]}"; do
       rm "$file" || echo "Failed to remove $file"

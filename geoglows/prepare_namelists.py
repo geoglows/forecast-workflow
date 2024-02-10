@@ -244,7 +244,6 @@ if __name__ == '__main__':
                 "inflow_file": inflow,
                 "namelist_directory": namelists_dir,
                 "outputs_directory": outputs_dir,
-                "file_label": os.path.splitext(inflow)[0].split('_')[-1],
             }, ])
 
     with Pool(min(len(jobs), os.cpu_count())) as p:
