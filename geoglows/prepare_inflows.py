@@ -53,7 +53,7 @@ if __name__ == '__main__':
     # make the inflow/YMD directory
     os.makedirs(os.path.join(FORECASTS_DIR, ymd, 'inflows'), exist_ok=True)
 
-    jobs = [(vpu_dir, runoff_file) for vpu_dir in vpu_dirs for runoff_file in runoff_files]
+    jobs = [(vpu_dir, runoff_file, ymd) for vpu_dir in vpu_dirs for runoff_file in runoff_files]
 
     with Pool(min(len(jobs), os.cpu_count())) as p:
         p.starmap(make_inflow, jobs)
