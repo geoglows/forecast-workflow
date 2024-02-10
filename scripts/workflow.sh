@@ -15,6 +15,7 @@ conda activate $CONDA_ENV_NAME
 mkdirs -p $FC_DIR/$YMD/inflows
 mkdirs -p $FC_DIR/$YMD/namelists
 mkdirs -p $FC_DIR/$YMD/outputs
+mkdirs -p $FC_DIR/$YMD/logs
 
 # Calculate inflows
 python ../geoglows/prepare_inflows.py
@@ -23,15 +24,7 @@ python ../geoglows/prepare_inflows.py
 python ../geoglows/prepare_namelists.py
 
 # RAPID routing
-docker run -d \
-  -it \
-  --name rapid \
-  --rm \
-  --mount type=bind,source=$CONFIGS_DIR,target=/mnt/configs \
-  --mount type=bind,source=$INITS_DIR,target=/mnt/inits \
-  --mount type=bind,source=$FC_DIR/$YMD,target=/mnt/fc \
-  --mount type=bind,source=$SCRIPTS_DIR,target=/mnt/scripts \
-  chdavid/rapid:latest
+docker exec rapid-docker-rapid python3 /mnt/scripts/runrapid.py --fcdir $FC_DIR/$YMD
 
 # Concatenate and summarize the ensemble outputs
 ./postprocess_rapid_outputs.sh -d $OUTPUT_DIR/$YMD

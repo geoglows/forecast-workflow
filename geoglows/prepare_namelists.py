@@ -164,7 +164,7 @@ def create_rapid_namelist(vpu_directory: str,
 
     vlat_file = inflow_file
     namelist_file_name = f'namelist_{vpu_code}'
-    qout_file_name = inflow_file.replace('m3', 'Qout')
+    qout_file_name = os.path.basename(inflow_file).replace('m3', 'Qout')
     qinit_file = qinit_file if qinit_file else ''
     qfinal_file = os.path.join(outputs_directory, f'Qfinal_{vpu_code}_{end_date}.nc')
 

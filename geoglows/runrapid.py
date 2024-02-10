@@ -11,10 +11,10 @@ def timestamp():
 
 
 def run_rapid_for_namelist_directory(namelist_dir: str,
-                                     path_rapid_exec: str = '/home/rapid/src/rapid',
-                                     logdir: str = '/mnt/logs') -> None:
-    watershed_id = os.path.basename(namelist_dir)
-    with open(os.path.join(logdir, f"{watershed_id}.log"), 'w') as f:
+                                     logdir: str,
+                                     path_rapid_exec: str = '/home/rapid/src/rapid', ) -> None:
+    vpuno = os.path.basename(namelist_dir).split("_")[1]
+    with open(os.path.join(logdir, f"{vpuno}.log"), 'w') as f:
         for namelist in sorted(glob.glob(os.path.join(namelist_dir, '*namelist*'))):
             try:
                 f.write(f'{timestamp()}: Running RAPID for {namelist}')
@@ -50,26 +50,20 @@ if __name__ == '__main__':
         None
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--namelistsdir', type=str, required=False,
-                        default='/mnt/namelists',
-                        help='Path to directory containing subdirectories of namelist files', )
-    parser.add_argument('--logdir', type=str, required=False,
-                        default='/mnt/logs',
-                        help='Path to directory to store logs', )
+    parser.add_argument('--fcdir', type=str, required=True,
+                        help='Path to forecast working directory', )
     parser.add_argument('--rapidexec', type=str, required=False,
                         default='/home/rapid/src/rapid',
                         help='Path to rapid executable', )
-    parser.add_argument('--sortdirs', type=bool, action='store_true',
-                        default=True,
-                        help='Order computations by large to small watershed size', )
 
     args = parser.parse_args()
+    fcdir = args.fcdir
     path_to_rapid_exec = args.rapidexec
-    namelists_dirs = args.namelistsdir
-    logs_dir = args.logdir
-    sort_dirs = args.sortdirs
 
-    namelists_dirs = [d for d in glob.glob(os.path.join(namelists_dirs, '*')) if os.path.isdir(d)]
+    logs_dir = os.path.join(fcdir, 'logs')
+    namelists_dirs = os.path.join(fcdir, 'namelists')
+
+    namelist_files = glob.glob(os.path.join(namelists_dirs, '*'))
     sorted_order = (
         605, 714, 109, 302, 609, 122, 402, 303, 304, 502, 214, 406, 105, 111, 804, 106, 409, 503, 404, 706, 103, 412,
         703, 508, 715, 501, 513, 217, 123, 407, 607, 704, 126, 210, 408, 221, 603, 701, 220, 413, 218, 216, 613, 205,
@@ -78,17 +72,19 @@ if __name__ == '__main__':
         125, 118, 108, 423, 716, 202, 504, 416, 114, 512, 604, 405, 712, 124, 710, 602, 403, 219, 507, 212, 104, 702,
         208, 803, 107, 417, 601, 614, 204, 802, 718, 717, 420, 305, 207, 705, 514,
     )
-    if sort_dirs:
-        namelists_dirs = sorted(namelists_dirs, key=lambda x: sorted_order.index(int(os.path.basename(x))))
+    namelist_files = sorted(namelist_files, key=lambda x: sorted_order.index(int(os.path.basename(x).split("_")[1])))
 
-    cpu_count = min([os.cpu_count(), len(namelists_dirs)])
-    print(f'Found {len(namelists_dirs)} input directories')
+    cpu_count = min([os.cpu_count(), len(namelist_files)])
+    print(f'Found {len(namelist_files)} namelist files')
     print(f'Have {os.cpu_count()} cpus')
     print(f'Using {cpu_count} cpus')
+    print(f'Logs will be written to {logs_dir}')
+    print(f'Running RAPID from {path_to_rapid_exec}')
 
     with Pool(cpu_count) as p:
-        # p.starmap(run_rapid_for_namelist_directory, [(d, path_to_rapid_exec, logs_dir) for d in namelists_dirs])
-        for d in namelists_dirs:
-            p.apply_async(run_rapid_for_namelist_directory, args=(d, path_to_rapid_exec, logs_dir,))
+        print('Beginning RAPID runs')
+        for f in namelist_files:
+            p.apply_async(run_rapid_for_namelist_directory, args=(f, logs_dir, path_to_rapid_exec, ))
         p.close()
         p.join()
+        print('Finished RAPID runs')
