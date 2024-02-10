@@ -141,13 +141,14 @@ def rapid_namelist(
         f.write(namelist_string)
 
 
-def rapid_namelist_from_directories(vpu_directory: str,
-                                    inflows_directory: str,
-                                    namelists_directory: str,
-                                    outputs_directory: str,
-                                    file_label: str = None,
-                                    end_date: str = None,
-                                    qinit_file: str = None, ) -> None:
+def create_rapid_namelist(vpu_directory: str,
+                          inflow_file: str,
+                          namelist_directory: str,
+                          outputs_directory: str,
+                          file_label: str = None,
+                          end_date: str = None,
+                          qinit_file: str = None,
+                          qfinal_file: str = None) -> None:
     vpu_code = os.path.basename(vpu_directory)
     k_file = os.path.join(vpu_directory, f'k.csv')
     x_file = os.path.join(vpu_directory, f'x.csv')
@@ -157,57 +158,49 @@ def rapid_namelist_from_directories(vpu_directory: str,
     for x in (k_file, x_file, riv_bas_id_file, rapid_connect_file):
         assert os.path.exists(x), f'{x} does not exist'
 
-    inflow_files = natsort.natsorted(glob.glob(os.path.join(inflows_directory, '*.nc')))
-    if not len(inflow_files):
-        print(f'No inflow files found for VPU {vpu_code}')
-        return
+    write_qfinal_file = bool(qfinal_file)
+    use_qinit_file = bool(qinit_file)
 
-    os.makedirs(namelists_directory, exist_ok=True)
+    vlat_file = inflow_file
+    namelist_file_name = f'namelist_{vpu_code}'
+    qout_file_name = inflow_file.replace('m3', 'Qout')
+    qinit_file = qinit_file if qinit_file else ''
+    qfinal_file = os.path.join(outputs_directory, f'Qfinal_{vpu_code}_{end_date}.nc')
 
-    for idx, inflow_file in enumerate(sorted(inflow_files)):
-        namelist_file_name = f'namelist_{vpu_code}'
-        qout_file_name = f'Qout_{vpu_code}.nc'
-        vlat_file = inflow_file
-        write_qfinal_file = True
-        qfinal_file = os.path.join(outputs_directory, f'Qfinal_{vpu_code}_{end_date}.nc')
+    if file_label:
+        namelist_file_name += f'_{file_label}'
+        qout_file_name = qout_file_name.replace('.nc', f'_{file_label}.nc')
+        qfinal_file = qfinal_file.replace('.nc', f'_{file_label}.nc')
 
-        if file_label:
-            namelist_file_name += f'_{file_label}'
-            qout_file_name = qout_file_name.replace('.nc', f'_{file_label}.nc')
-            qfinal_file = qfinal_file.replace('.nc', f'_{file_label}.nc')
+    os.makedirs(outputs_directory, exist_ok=True)
+    os.makedirs(namelist_directory, exist_ok=True)
 
-        namelist_save_path = os.path.join(namelists_directory, namelist_file_name)
-        qout_path = os.path.join(outputs_directory, qout_file_name)
-        os.makedirs(outputs_directory, exist_ok=True)
+    namelist_path = os.path.join(namelist_directory, namelist_file_name)
+    qout_path = os.path.join(outputs_directory, qout_file_name)
 
-        with netCDF4.Dataset(inflow_file) as ds:
-            time_step_inflows = ds['time_bnds'][0, 1] - ds['time_bnds'][0, 0]
-            time_total_inflow = ds['time_bnds'][-1, 1] - ds['time_bnds'][0, 0]
-        time_total = time_total_inflow
-        timestep_inp_runoff = time_step_inflows
-        timestep_calc = time_step_inflows
-        timestep_calc_routing = 900
+    with netCDF4.Dataset(inflow_file) as ds:
+        time_step_inflows = ds['time_bnds'][0, 1] - ds['time_bnds'][0, 0]
+        time_total_inflow = ds['time_bnds'][-1, 1] - ds['time_bnds'][0, 0]
+    time_total = time_total_inflow
+    timestep_inp_runoff = time_step_inflows
+    timestep_calc = time_step_inflows
+    timestep_calc_routing = 900
 
-        use_qinit_file = idx > 0 or qinit_file is not None
-        qinit_file = os.path.join(
-            outputs_directory, f'Qfinal_{vpu_code}_{inflow_files[idx - 1].split("_")[-1]}'
-        ) if use_qinit_file else ''
-
-        rapid_namelist(namelist_save_path=namelist_save_path,
-                       k_file=k_file,
-                       x_file=x_file,
-                       riv_bas_id_file=riv_bas_id_file,
-                       rapid_connect_file=rapid_connect_file,
-                       vlat_file=vlat_file,
-                       qout_file=qout_path,
-                       time_total=time_total,
-                       timestep_calc_routing=timestep_calc_routing,
-                       timestep_calc=timestep_calc,
-                       timestep_inp_runoff=timestep_inp_runoff,
-                       write_qfinal_file=write_qfinal_file,
-                       qfinal_file=qfinal_file,
-                       use_qinit_file=use_qinit_file,
-                       qinit_file=qinit_file, )
+    rapid_namelist(namelist_save_path=namelist_path,
+                   k_file=k_file,
+                   x_file=x_file,
+                   riv_bas_id_file=riv_bas_id_file,
+                   rapid_connect_file=rapid_connect_file,
+                   vlat_file=vlat_file,
+                   qout_file=qout_path,
+                   time_total=time_total,
+                   timestep_calc_routing=timestep_calc_routing,
+                   timestep_calc=timestep_calc,
+                   timestep_inp_runoff=timestep_inp_runoff,
+                   write_qfinal_file=write_qfinal_file,
+                   qfinal_file=qfinal_file,
+                   use_qinit_file=use_qinit_file,
+                   qinit_file=qinit_file, )
 
     return
 
@@ -217,6 +210,7 @@ if __name__ == '__main__':
     Prepare rapid namelist files for a directory of VPU inputs
     """
     argparser = argparse.ArgumentParser()
+    argparser.add_argument('--ymd', type=str, required=True)
     argparser.add_argument('--basedir', type=str, default='/mnt')
     argparser.add_argument('--dockerpaths', action='store_true', default=False)
     args = argparser.parse_args()
@@ -226,9 +220,9 @@ if __name__ == '__main__':
 
     base_dir = base_dir[:-1] if base_dir.endswith('/') else base_dir
     vpu_dirs = os.path.join(base_dir, 'inputs')
-    inflow_dirs = os.path.join(base_dir, 'inflows')
-    namelist_dirs = os.path.join(base_dir, 'namelists')
-    output_dirs = os.path.join(base_dir, 'outputs')
+    inflows_dir = os.path.join(base_dir, 'inflows')
+    namelists_dir = os.path.join(base_dir, 'namelists')
+    outputs_dir = os.path.join(base_dir, 'outputs')
 
     logging.basicConfig(
         level=logging.DEBUG,
@@ -239,18 +233,16 @@ if __name__ == '__main__':
     jobs = []
 
     all_vpu_dirs = sorted([x for x in glob.glob(os.path.join(vpu_dirs, '*')) if os.path.isdir(x)])
+    all_inflow_files = sorted([x for x in glob.glob(os.path.join(inflows_dir, '*')) if os.path.isfile(x)])
     for vpu_dir in all_vpu_dirs:
-        inflow_dir = os.path.join(inflow_dirs, os.path.basename(vpu_dir))
-        namelist_dir = os.path.join(namelist_dirs, os.path.basename(vpu_dir))
-        output_dir = os.path.join(output_dirs, os.path.basename(vpu_dir))
+        inflow_dir = os.path.join(inflows_dir, os.path.basename(vpu_dir))
+        namelist_dir = os.path.join(namelists_dir, os.path.basename(vpu_dir))
+        output_dir = os.path.join(outputs_dir, os.path.basename(vpu_dir))
 
-        rapid_namelist_from_directories(vpu_directory=vpu_dir,
-                                        inflows_directory=inflow_dir,
-                                        namelists_directory=namelist_dir,
-                                        outputs_directory=output_dir, )
+        create_rapid_namelist(vpu_directory=vpu_dir, inflow_file='', namelist_directory='', outputs_directory=output_dir)
 
     if dockerpaths and base_dir != '/mnt':
-        for file in glob.glob(os.path.join(namelist_dirs, '*', 'namelist*')):
+        for file in glob.glob(os.path.join(namelists_dir, '*', 'namelist*')):
             with open(file, 'r') as f:
                 text = f.read().replace(base_dir, '/mnt')
             with open(file, 'w') as f:
