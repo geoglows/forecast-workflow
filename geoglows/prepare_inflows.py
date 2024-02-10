@@ -33,7 +33,8 @@ if __name__ == '__main__':
     ymd = args.ymd
 
     # list all the VPU directories
-    vpu_dirs = natsorted(glob.glob(os.path.join(CONFIGS_DIR, '*')))
+    vpu_dirs = glob.glob(os.path.join(CONFIGS_DIR, '*'))
+    vpu_dirs = natsorted([x for x in vpu_dirs if os.path.isdir(x)])
 
     # search for runoff files in runoff/YMD
     RUNOFFS_DIR = os.path.join(RUNOFFS_DIR, ymd)
