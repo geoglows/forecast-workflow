@@ -12,7 +12,7 @@ FORECASTS_DIR = os.environ['FORECASTS_DIR']
 
 def make_inflow(vpu_config_dir: str, runoff_file: str, ymd: str):
     ensemble_number = os.path.basename(runoff_file).split('.')[0]
-    inflow_dir = os.path.join(FORECASTS_DIR, ymd)
+    inflow_dir = os.path.join(FORECASTS_DIR, ymd, 'inflows')
     create_inflow_file(
         lsm_data=runoff_file,
         input_dir=vpu_config_dir,
