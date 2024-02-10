@@ -239,7 +239,6 @@ if __name__ == '__main__':
     for vpu_dir in vpu_dirs:
         vpu = os.path.basename(vpu_dir)
         for inflow in glob.glob(os.path.join(inflows_dir, f'm3_{vpu}_*.nc')):
-            print(inflow)
             jobs.append([{
                 "vpu_directory": vpu_dir,
                 "inflow_file": inflow,
