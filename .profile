@@ -7,7 +7,7 @@ OUTPUTS_DIR="/mnt/outputs"
 SCRIPTS_DIR="/mnt/scripts"
 
 # Conda Environment
-CONDA_ENV=""
+CONDA_ENV="forecasts"
 
 # S3 Buckets
 S3_BUCKET_FORECAST_ARCHIVE="geoglows-forecast-archive"
