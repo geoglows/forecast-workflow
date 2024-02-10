@@ -5,18 +5,18 @@ import argparse
 from natsort import natsorted
 from multiprocessing import Pool
 
-config_dir = os.getenv('CONFIG_DIR')
-inflow_dir = os.getenv('INFLOW_DIR')
-runoff_dir = os.getenv('RUNOFF_DIR')
+CONFIGS_DIR = os.environ['CONFIGS_DIR']
+RUNOFFS_DIR = os.environ['RUNOFFS_DIR']
+FORECASTS_DIR = os.environ['FORECASTS_DIR']
 
 
 def make_inflow(vpu_config_dir: str, runoff_file: str, ymd: str):
     ensemble_number = os.path.basename(runoff_file).split('.')[0]
-    inflows = os.path.join(inflow_dir, ymd)
+    inflow_dir = os.path.join(FORECASTS_DIR, ymd)
     create_inflow_file(
         lsm_data=runoff_file,
         input_dir=vpu_config_dir,
-        inflow_dir=inflows,
+        inflow_dir=inflow_dir,
         file_label=ensemble_number,
         force_positive_runoff=True,
     )
@@ -25,7 +25,7 @@ def make_inflow(vpu_config_dir: str, runoff_file: str, ymd: str):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'ymd',
+        '--ymd',
         help='Year, month, and day in YYYYMMDD format',
         required=True,
     )
@@ -33,17 +33,25 @@ if __name__ == '__main__':
     ymd = args.ymd
 
     # list all the VPU directories
-    vpu_dirs = natsorted(glob.glob(os.path.join(config_dir, '*')))
+    vpu_dirs = natsorted(glob.glob(os.path.join(CONFIGS_DIR, '*')))
 
     # search for runoff files in runoff/YMD
-    runoff_dir = os.path.join(runoff_dir, ymd)
-    runoff_files = natsorted(glob.glob(os.path.join(runoff_dir, '*.nc')))
+    RUNOFFS_DIR = os.path.join(RUNOFFS_DIR, ymd)
+    runoff_files = natsorted(glob.glob(os.path.join(RUNOFFS_DIR, '*.nc')))
+
+    print(f'CONFIGS_DIR: {CONFIGS_DIR}')
+    print(f'RUNOFFS_DIR: {RUNOFFS_DIR}')
+    print(f'FORECASTS_DIR: {FORECASTS_DIR}')
+    print(f'ymd: {ymd}')
+    print(f'vpu_dirs: {vpu_dirs}')
+    print(f'runoff_files: {runoff_files}')
+
     if not runoff_files:
-        print(f'No runoff files found in {runoff_dir}')
+        print(f'No runoff files found in {RUNOFFS_DIR}')
         exit(1)
 
     # make the inflow/YMD directory
-    os.makedirs(os.path.join(inflow_dir, ymd), exist_ok=True)
+    os.makedirs(os.path.join(FORECASTS_DIR, ymd, 'inflows'), exist_ok=True)
 
     jobs = [(vpu_dir, runoff_file) for vpu_dir in vpu_dirs for runoff_file in runoff_files]
 

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# create the YMD environment variable and export so the subsequent scripts can also access it
+YMD=$(date +%Y%m%d)
+export YMD
+
 # Activate the environment
 conda activate $CONDA_ENV_NAME
 
@@ -8,9 +12,9 @@ conda activate $CONDA_ENV_NAME
   # if the date available on the s3 bucket is newer than the last downloaded date, download the new data
   # if the date available on the s3 bucket is older or the same as the last downloaded date
 
-# create the YMD environment variable and export so the subsequent scripts can also access it
-YMD=$(date +%Y%m%d)
-export YMD
+mkdirs -p $FC_DIR/$YMD/inflows
+mkdirs -p $FC_DIR/$YMD/namelists
+mkdirs -p $FC_DIR/$YMD/outputs
 
 # Calculate inflows
 python ../geoglows/prepare_inflows.py
