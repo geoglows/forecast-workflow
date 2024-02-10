@@ -1,9 +1,14 @@
-from basininflow import create_inflow_file
-import os
-import glob
 import argparse
-from natsort import natsorted
+import glob
+import logging
+import os
+import sys
 from multiprocessing import Pool
+
+from basininflow import create_inflow_file
+from natsort import natsorted
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 CONFIGS_DIR = os.environ['CONFIGS_DIR']
 RUNOFFS_DIR = os.environ['RUNOFFS_DIR']
