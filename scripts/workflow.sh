@@ -33,10 +33,10 @@ mkdir -p FORECASTS_DIR/$YMD/logs
 mkdir -p FORECASTS_DIR/$YMD/maptables
 
 # Calculate inflows
-python ../geoglows/prepare_inflows.py
+python ../geoglows/prepare_inflows.py --ymd $YMD
 
 # Prepare namelists
-python ../geoglows/prepare_namelists.py
+python ../geoglows/prepare_namelists.py --ymd $YMD
 
 # RAPID routing
 docker exec rapid-docker-rapid python3 /mnt/scripts/runrapid.py --fcdir $FC_DIR/$YMD
