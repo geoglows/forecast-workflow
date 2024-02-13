@@ -214,6 +214,7 @@ if __name__ == '__main__':
     """
     Prepare rapid namelist files for a directory of VPU inputs
     """
+    print('prepare_namelists.py')
     argparser = argparse.ArgumentParser()
     argparser.add_argument('--ymd', type=str, required=True)
     args = argparser.parse_args()
@@ -227,6 +228,12 @@ if __name__ == '__main__':
     os.makedirs(namelists_dir, exist_ok=True)
     os.makedirs(outputs_dir, exist_ok=True)
 
+    print(f'ymd: {ymd}')
+    print(f'FORECASTS_DIR: {FORECASTS_DIR}')
+    print(f'inflows_dir: {inflows_dir}')
+    print(f'namelists_dir: {namelists_dir}')
+    print(f'outputs_dir: {outputs_dir}')
+
     logging.basicConfig(
         level=logging.DEBUG,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -235,8 +242,7 @@ if __name__ == '__main__':
 
     jobs = []
 
-    vpu_dirs = sorted([x for x in glob.glob(os.path.join(CONFIGS_DIR, '*')) if os.path.isdir(x)])
-    for vpu_dir in vpu_dirs:
+    for vpu_dir in sorted([x for x in glob.glob(os.path.join(CONFIGS_DIR, '*')) if os.path.isdir(x)]):
         vpu = os.path.basename(vpu_dir)
         for inflow in glob.glob(os.path.join(inflows_dir, f'm3_{vpu}_*.nc')):
             jobs.append([{
@@ -246,5 +252,8 @@ if __name__ == '__main__':
                 "outputs_directory": outputs_dir,
             }, ])
 
-    with Pool(min(len(jobs), os.cpu_count())) as p:
+    number_cpus = min([len(jobs), os.cpu_count()])
+    print(f'number_cpus: {number_cpus}')
+
+    with Pool(number_cpus) as p:
         p.starmap(call_make_namelist, jobs)

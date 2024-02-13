@@ -28,6 +28,7 @@ def make_inflow(vpu_config_dir: str, runoff_file: str, ymd: str):
 
 
 if __name__ == '__main__':
+    print('prepare_inflows.py')
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--ymd',
@@ -60,6 +61,10 @@ if __name__ == '__main__':
     os.makedirs(os.path.join(FORECASTS_DIR, ymd, 'inflows'), exist_ok=True)
 
     jobs = [(vpu_dir, runoff_file, ymd) for vpu_dir in vpu_dirs for runoff_file in runoff_files]
+    required_cpus = min([len(jobs), os.cpu_count()])
 
-    with Pool(min(len(jobs), os.cpu_count())) as p:
+    print(f'jobs: {jobs}')
+    print(f'Using {required_cpus} CPUs')
+
+    with Pool(required_cpus) as p:
         p.starmap(make_inflow, jobs)

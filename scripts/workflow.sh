@@ -47,10 +47,10 @@ python ../geoglows/prepare_inflows.py --ymd $YMD
 python ../geoglows/prepare_namelists.py --ymd $YMD
 
 # RAPID routing
-docker exec rapid-docker-rapid python3 /mnt/scripts/runrapid.py --fcdir $FC_DIR/$YMD
+docker exec rapid python3 /mnt/scripts/runrapid.py --fcdir $FORECASTS_DIR/$YMD
 
 # Concatenate and summarize the ensemble outputs
-./postprocess_rapid_outputs.sh -d $OUTPUT_DIR/$YMD/outputs
+./postprocess_rapid_outputs.sh -d $FORECASTS_DIR/$YMD/outputs
 
 # Calculate the init files
 python ../geoglows/calculate_inits.py

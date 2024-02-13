@@ -33,22 +33,7 @@ def run_rapid_for_namelist_file(namelist_file: str,
 
 
 if __name__ == '__main__':
-    """
-    Run RAPID for all namelist files in a specified directory
-
-    Usage:
-        python run_rapid.py <path_to_rapid_executable> <namelists_dir>
-
-    Directory structure:
-        <namelist_directory>
-            rapid_namelist_<watershed_1_id>
-            rapid_namelist_<watershed_2_id>
-            rapid_namelist_<watershed_3_id>
-            ...
-
-    Returns:
-        None
-    """
+    print('runrapid.py')
     parser = argparse.ArgumentParser()
     parser.add_argument('--fcdir', type=str, required=True,
                         help='Path to forecast working directory', )
@@ -73,6 +58,11 @@ if __name__ == '__main__':
         208, 803, 107, 417, 601, 614, 204, 802, 718, 717, 420, 305, 207, 705, 514,
     )
     namelist_files = sorted(namelist_files, key=lambda x: sorted_order.index(int(os.path.basename(x).split("_")[1])))
+
+    print(f'Forecasts directory: {fcdir}')
+    print(f'Namelist directory: {namelists_dirs}')
+    print(f'RAPID executable: {path_to_rapid_exec}')
+    print(f'Found {len(namelist_files)} namelist files')
 
     cpu_count = min([os.cpu_count(), len(namelist_files)])
     print(f'Found {len(namelist_files)} namelist files')
