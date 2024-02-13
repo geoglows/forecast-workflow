@@ -3,20 +3,28 @@
 # Initialize YMD variable with current date
 YMD=$(date +%Y%m%d)
 
-# get the ymd variable from the --ymd flag on the command line or use the current date
-while getopts "-:" flag; do
-  case "${flag}" in
-    -) case "${OPTARG}" in
-         ymd) YMD="${!OPTIND}"; OPTIND=$((OPTIND + 1)) ;;
-         *) ;;
-       esac
-       ;;
-    *) ;;
-  esac
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --ymd)
+            shift
+            if [[ ! "$1" =~ ^[0-9]{8}$ ]]; then
+                echo "Error: Invalid date format. Please use YYYYMMDD."
+                exit 1
+            fi
+            YMD=$1
+            ;;
+        *)
+            echo "Error: Unknown option $1"
+            exit 1
+            ;;
+    esac
+    shift
 done
 
-# Shift to the next argument after processing the flag
-shift $((OPTIND -1))
+if [[ -z $YMD ]]; then
+    echo "Error: Date not specified. Please use the --ymd flag to specify a date in the format YYYYMMDD."
+    exit 1
+fi
 
 echo "YMD is set to: $YMD"
 export YMD
