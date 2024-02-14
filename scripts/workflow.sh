@@ -56,7 +56,7 @@ docker exec rapid python3 /mnt/scripts/runrapid.py --fcdir $FORECASTS_DIR/$YMD
 python ../geoglows/calculate_inits.py --ymd $YMD
 
 # NetCDF to Zarr (and delete netCDFs)
-python ../geoglows/netcdf_ensembles_to_zarr.py
+python ../geoglows/vpu_netcdfs_to_zarr.py --ymd $YMD
 
 # Generate Esri map style tables
 python ../geoglows/generate_map_style_tables.py

@@ -105,4 +105,4 @@ if __name__ == "__main__":
     pool_cpus = min([len(vpus), os.cpu_count()])
 
     with Pool(pool_cpus) as p:
-        p.starmap(init_file_from_forecast_averages, [(ymd, os.path.basename(vpu_dir)) for vpu_dir in vpu_dirs])
+        p.starmap(init_file_from_forecast_averages, [(ymd, vpu) for vpu in vpus])
