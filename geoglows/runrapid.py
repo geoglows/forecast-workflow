@@ -58,13 +58,11 @@ if __name__ == '__main__':
         208, 803, 107, 417, 601, 614, 204, 802, 718, 717, 420, 305, 207, 705, 514,
     )
     namelist_files = sorted(namelist_files, key=lambda x: sorted_order.index(int(os.path.basename(x).split("_")[1])))
+    cpu_count = min([os.cpu_count(), len(namelist_files)])
 
     print(f'Forecasts directory: {fcdir}')
     print(f'Namelist directory: {namelists_dirs}')
     print(f'RAPID executable: {path_to_rapid_exec}')
-    print(f'Found {len(namelist_files)} namelist files')
-
-    cpu_count = min([os.cpu_count(), len(namelist_files)])
     print(f'Found {len(namelist_files)} namelist files')
     print(f'Have {os.cpu_count()} cpus')
     print(f'Using {cpu_count} cpus')

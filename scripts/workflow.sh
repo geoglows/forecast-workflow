@@ -53,7 +53,7 @@ docker exec rapid python3 /mnt/scripts/runrapid.py --fcdir $FORECASTS_DIR/$YMD
 ./postprocess_rapid_outputs.sh -d $FORECASTS_DIR/$YMD/outputs
 
 # Calculate the init files
-python ../geoglows/calculate_inits.py
+python ../geoglows/calculate_inits.py --ymd $YMD
 
 # NetCDF to Zarr (and delete netCDFs)
 python ../geoglows/netcdf_ensembles_to_zarr.py
