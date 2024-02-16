@@ -34,6 +34,7 @@ def netcdf_forecasts_to_zarr(ymd: str) -> None:
     qout_1_51_files = sorted([os.path.join(outputs_directory, f"Qout_{vpu}.nc") for vpu in vpu_nums])
     qout_52_files = sorted(glob.glob(os.path.join(outputs_directory, f"Qout_*_52.nc")))
     zarr_file_path = os.path.join(outputs_directory, f"Qout_{ymd}.zarr")
+    print(qout_1_51_files)
 
     if os.path.exists(zarr_file_path):
         logging.info(f"Removing existing zarr file: {zarr_file_path}")
@@ -42,7 +43,7 @@ def netcdf_forecasts_to_zarr(ymd: str) -> None:
     with dask.config.set(**{
         'array.slicing.split_large_chunks': False,
         # set the max chunk size to 5MB
-        'array.chunk-size': '40MB',
+        'array.chunk-size': '5MB',
         # use the threads scheduler
         'scheduler': 'threads',
         # set the maximum memory target usage to 90% of total memory

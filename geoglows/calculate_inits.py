@@ -15,8 +15,10 @@ INITS_DIR = os.environ['INITS_DIR']
 def init_file_from_forecast_averages(ymd: str, vpu: str or int) -> None:
     init_date = pd.to_datetime(ymd) + pd.Timedelta(days=1)
     init_date_string = init_date.strftime('%Y%m%d')
-    average_flow_file = os.path.join(FORECASTS_DIR, f'nces_avg_{vpu}.nc')
+    average_flow_file = os.path.join(FORECASTS_DIR, ymd, 'outputs', f'nces_avg_{vpu}.nc')
     init_output_file = os.path.join(INITS_DIR, vpu, f'Qinit_{vpu}_{init_date_string}.nc')
+
+    os.makedirs(os.path.join(INITS_DIR, vpu), exist_ok=True)
 
     print(f'Creating initial flow file for {vpu} for initialization date of {init_date_string}')
     print(f'Using average flow file: {average_flow_file}')

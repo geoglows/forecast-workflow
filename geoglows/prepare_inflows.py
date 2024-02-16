@@ -54,6 +54,9 @@ if __name__ == '__main__':
             lsm_data=runoff_file,
             input_dir=vpu_config_dir,
             inflow_dir=inflow_dir,
+            y_var='lat',
+            x_var='lon',
+            time_var='time',
             file_label=ensemble_number,
             force_positive_runoff=True,
         )

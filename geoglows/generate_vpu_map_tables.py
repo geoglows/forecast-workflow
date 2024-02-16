@@ -1,5 +1,4 @@
 import argparse
-import logging
 import os
 
 import netCDF4 as nc
@@ -16,9 +15,9 @@ RETURN_PERIODS_DIR = os.environ['RETURN_PERIODS_DIR']
 def postprocess_vpu_forecast_directory(ymd: str, vpu: int or str, ):
     style_table_file_name = f'mapstyletable_{vpu}_{ymd}.parquet'
     if os.path.exists(os.path.join(FORECASTS_DIR, ymd, 'mapstyletables', style_table_file_name)):
-        logging.info(f'Style tables already exists: {style_table_file_name}')
+        print(f'Style tables already exists: {style_table_file_name}')
         return
-    logging.info(f'Creating style table: {style_table_file_name}')
+    print(f'Creating style table: {style_table_file_name}')
 
     nces_output_filename = os.path.join(FORECASTS_DIR, ymd, 'outputs', f'nces_avg_{vpu}.nc')
 
@@ -35,7 +34,7 @@ def postprocess_vpu_forecast_directory(ymd: str, vpu: int or str, ):
 
     # creating pandas dataframe with return periods
     rp_path = os.path.join(RETURN_PERIODS_DIR, f"returnperiods_{vpu}.nc")
-    logging.info(f"Return Period Path {rp_path}")
+    print(f"Return Period Path {rp_path}")
     with nc.Dataset(rp_path, "r") as rp_ncfile:
         rp_df = pd.DataFrame(
             {
@@ -74,7 +73,7 @@ def postprocess_vpu_forecast_directory(ymd: str, vpu: int or str, ):
     for df in [mean_thickness_df, mean_ret_per_df]:
         mean_flow_df = mean_flow_df.merge(df, left_index=True, right_index=True)
 
-    maptable_outdir = os.path.join(FORECASTS_DIR, "map_style_tables")
+    maptable_outdir = os.path.join(FORECASTS_DIR, ymd, "maptables")
 
     mean_flow_df.index.names = ["timestamp", "comid"]
     mean_flow_df = mean_flow_df.reset_index()

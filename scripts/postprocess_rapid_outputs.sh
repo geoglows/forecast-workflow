@@ -13,17 +13,27 @@ check_files_exist() {
   return 0
 }
 
-# use getopts to parse the -d options
-while getopts "d:v:" flag; do
-  case "${flag}" in
-    d) rapid_output_directory=${OPTARG} ;;
-    v) vpu=${OPTARG} ;;
-    *) echo "Invalid option" ;;
-  esac
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --outputs)
+            shift
+            output_directory="$1"
+            ;;
+        --vpu)
+            shift
+            vpu="$1"
+            ;;
+        *)
+            echo "Error: Unknown option $1"
+            exit 1
+            ;;
+    esac
+    shift
 done
 
-echo "Looking for rapid outputs in directory: $rapid_output_directory"
-cd "$rapid_output_directory" || exit
+
+echo "Looking for rapid outputs in directory: $output_directory"
+cd "$output_directory" || exit
 
 # set output file names
 avg_output_file="nces_avg_${vpu}.nc"
