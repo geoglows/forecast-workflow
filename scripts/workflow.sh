@@ -2,8 +2,8 @@
 
 # Initialize YMD variable with current date
 YMD=$(date +%Y%m%d)
-NCPUS=$(nproc --all)
 VPUS=$(ls -1 $CONFIGS_DIR | awk -F/ '{print $NF}' | sort -V)
+NCPUS=$(($(nproc --all) < ${#VPUS[@]} ? $(nproc --all) : ${#VPUS[@]}))
 
 while [[ $# -gt 0 ]]; do
     case "$1" in

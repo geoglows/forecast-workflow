@@ -229,9 +229,13 @@ if __name__ == '__main__':
     print(f'outputs_dir: {outputs_dir}')
 
     for inflow_file in glob.glob(os.path.join(inflows_dir, f'm3_{vpu}_*.nc')):
+        ensemble_number = os.path.basename(inflow_file).replace('.nc', '').split('_')[-1]
+        # todo determine the init file to use
         create_rapid_namelist(
             vpu_directory=os.path.join(CONFIGS_DIR, vpu),
             inflow_file=inflow_file,
             namelist_directory=namelists_dir,
             outputs_directory=outputs_dir,
+            qfinal_file=None,
+            file_label=ensemble_number,
         )
