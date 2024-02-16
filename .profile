@@ -4,12 +4,14 @@ RUNOFFS_DIR="/mnt/runoffs"
 SCRIPTS_DIR="/mnt/scripts"
 FORECASTS_DIR="/mnt/fc"
 INITS_DIR="/mnt/inits"
+RETURN_PERIODS_DIR="/mnt/returnperiods"
 
 export CONFIGS_DIR
 export RUNOFFS_DIR
 export SCRIPTS_DIR
 export FORECASTS_DIR
 export INITS_DIR
+export RETURN_PERIODS_DIR
 
 # S3 Buckets
 S3_BUCKET_FORECAST_ARCHIVE="geoglows-forecast-archive"
@@ -29,4 +31,7 @@ export CLOUDWATCH_LOG_GROUP
 CONDA_ENV="forecasts"
 
 export CONDA_ENV
+
+# activate the environment and docker containers
 conda activate $CONDA_ENV
+docker start rapid

@@ -1,0 +1,13 @@
+# make a docker-compose.yml file to make a container using the Dockerfile as the base
+version: '3'
+services:
+  rapid:
+    image: chdavid/rapid
+    stdin_open: true
+    tty: true
+    container_name: rapid
+    volumes:
+      - /mnt/configs:/mnt/configs:ro
+      - /mnt/scripts:/mnt/scripts
+      - /mnt/fc:/mnt/fc
+      - /mnt/inits:/mnt/inits
