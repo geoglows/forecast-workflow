@@ -11,11 +11,6 @@ export SCRIPTS_DIR
 export FORECASTS_DIR
 export INITS_DIR
 
-# Conda Environment
-CONDA_ENV="forecasts"
-
-export CONDA_ENV
-
 # S3 Buckets
 S3_BUCKET_FORECAST_ARCHIVE="geoglows-forecast-archive"
 S3_BUCKET_ESRI_MAP_TABLES="geoglows-esri-map-tables"
@@ -29,3 +24,9 @@ export S3_BUCKET_INIT_ARCHIVE
 CLOUDWATCH_LOG_GROUP="geoglows-forecast-compute"
 
 export CLOUDWATCH_LOG_GROUP
+
+# Conda Environment
+CONDA_ENV="forecasts"
+
+export CONDA_ENV
+conda activate $CONDA_ENV
