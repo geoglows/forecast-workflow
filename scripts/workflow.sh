@@ -50,7 +50,7 @@ xargs -I {} -P $NCPUS python ../geoglows/prepare_namelists.py --ymd $YMD --vpu {
 
 # RAPID routing
 NAMELISTS=$(find $FORECASTS_DIR/$YMD/namelists -name "n*" | sort -V)
-xargs -I {} -P $NCPUS docker exec rapid python3 /mnt/scripts/runrapid.py --namelist {} <<< $NAMELISTS || exit 1
+xargs -I {} -P $NCPUS docker exec rapid python3 /mnt/scripts/runrapid.py --fcdir $FORECASTS_DIR/$YMD --namelist {} <<< $NAMELISTS || exit 1
 
 # Concatenate and summarize the ensemble outputs
 xargs -I {} -P $NCPUS python ./postprocess_rapid_outputs.sh -d $FORECASTS_DIR/$YMD/outputs -v {} <<< $VPUS || exit 1
