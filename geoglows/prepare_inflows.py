@@ -3,7 +3,6 @@ import glob
 import logging
 import os
 import sys
-from multiprocessing import Pool
 
 from basininflow import create_inflow_file
 from natsort import natsorted
@@ -14,19 +13,6 @@ CONFIGS_DIR = os.environ['CONFIGS_DIR']
 RUNOFFS_DIR = os.environ['RUNOFFS_DIR']
 FORECASTS_DIR = os.environ['FORECASTS_DIR']
 
-
-def make_inflow(vpu_config_dir: str, runoff_file: str, ymd: str):
-    ensemble_number = os.path.basename(runoff_file).split('.')[0]
-    inflow_dir = os.path.join(FORECASTS_DIR, ymd, 'inflows')
-    create_inflow_file(
-        lsm_data=runoff_file,
-        input_dir=vpu_config_dir,
-        inflow_dir=inflow_dir,
-        file_label=ensemble_number,
-        force_positive_runoff=True,
-    )
-
-
 if __name__ == '__main__':
     print('prepare_inflows.py')
     parser = argparse.ArgumentParser()
@@ -35,36 +21,37 @@ if __name__ == '__main__':
         help='Year, month, and day in YYYYMMDD format',
         required=True,
     )
+    parser.add_argument(
+        '--vpu',
+        help='VPU number',
+        required=True,
+    )
     args = parser.parse_args()
     ymd = args.ymd
-
-    # list all the VPU directories
-    vpu_dirs = glob.glob(os.path.join(CONFIGS_DIR, '*'))
-    vpu_dirs = natsorted([x for x in vpu_dirs if os.path.isdir(x)])
+    vpu = args.vpu
 
     # search for runoff files in runoff/YMD
     RUNOFFS_DIR = os.path.join(RUNOFFS_DIR, ymd)
     runoff_files = natsorted(glob.glob(os.path.join(RUNOFFS_DIR, '*.nc')))
 
+    inflow_dir = os.path.join(FORECASTS_DIR, ymd, 'inflows')
+    vpu_config_dir = os.path.join(CONFIGS_DIR, vpu)
+
     print(f'CONFIGS_DIR: {CONFIGS_DIR}')
     print(f'RUNOFFS_DIR: {RUNOFFS_DIR}')
     print(f'FORECASTS_DIR: {FORECASTS_DIR}')
     print(f'ymd: {ymd}')
-    print(f'vpu_dirs: {vpu_dirs}')
     print(f'runoff_files: {runoff_files}')
-
-    if not runoff_files:
-        print(f'No runoff files found in {RUNOFFS_DIR}')
-        exit(1)
 
     # make the inflow/YMD directory
     os.makedirs(os.path.join(FORECASTS_DIR, ymd, 'inflows'), exist_ok=True)
 
-    jobs = [(vpu_dir, runoff_file, ymd) for vpu_dir in vpu_dirs for runoff_file in runoff_files]
-    required_cpus = min([len(jobs), os.cpu_count()])
-
-    print(f'jobs: {jobs}')
-    print(f'Using {required_cpus} CPUs')
-
-    with Pool(required_cpus) as p:
-        p.starmap(make_inflow, jobs)
+    for runoff_file in runoff_files:
+        ensemble_number = os.path.basename(runoff_file).split('.')[0]
+        create_inflow_file(
+            lsm_data=runoff_file,
+            input_dir=vpu_config_dir,
+            inflow_dir=inflow_dir,
+            file_label=ensemble_number,
+            force_positive_runoff=True,
+        )

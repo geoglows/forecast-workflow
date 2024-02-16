@@ -1,12 +1,10 @@
-import datetime
-import glob
-import xarray as xr
 import argparse
-import pandas as pd
+import datetime
 import os
-import netCDF4 as nc
 
-from multiprocessing import Pool
+import netCDF4 as nc
+import pandas as pd
+import xarray as xr
 
 FORECASTS_DIR = os.environ['FORECASTS_DIR']
 CONFIGS_DIR = os.environ['CONFIGS_DIR']
@@ -95,14 +93,15 @@ if __name__ == "__main__":
         required=True,
         help='Year, month, and day in YYYYMMDD format',
     )
+    parser.add_argument(
+        '--vpu',
+        type=str,
+        required=True,
+        help='VPU number',
+    )
     args = parser.parse_args()
+
     ymd = args.ymd
+    vpu = args.vpu
 
-    # list all the VPU directories
-    vpus = [x for x in glob.glob(os.path.join(CONFIGS_DIR, '*')) if os.path.isdir(x)]
-    vpus = [os.path.basename(x) for x in vpus]
-
-    pool_cpus = min([len(vpus), os.cpu_count()])
-
-    with Pool(pool_cpus) as p:
-        p.starmap(init_file_from_forecast_averages, [(ymd, vpu) for vpu in vpus])
+    init_file_from_forecast_averages(ymd=ymd, vpu=vpu)

@@ -1,9 +1,6 @@
 import argparse
 import glob
-import logging
 import os
-import sys
-from multiprocessing import Pool
 
 import netCDF4
 import pandas as pd
@@ -206,20 +203,17 @@ def create_rapid_namelist(vpu_directory: str,
     return
 
 
-def call_make_namelist(kwargs_dict: dict):
-    create_rapid_namelist(**kwargs_dict)
-
-
 if __name__ == '__main__':
     """
     Prepare rapid namelist files for a directory of VPU inputs
     """
-    print('prepare_namelists.py')
     argparser = argparse.ArgumentParser()
     argparser.add_argument('--ymd', type=str, required=True)
+    argparser.add_argument('--vpu', type=str, required=True)
     args = argparser.parse_args()
 
     ymd = args.ymd
+    vpu = args.vpu
 
     inflows_dir = os.path.join(FORECASTS_DIR, ymd, 'inflows')
     namelists_dir = os.path.join(FORECASTS_DIR, ymd, 'namelists')
@@ -234,26 +228,10 @@ if __name__ == '__main__':
     print(f'namelists_dir: {namelists_dir}')
     print(f'outputs_dir: {outputs_dir}')
 
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        stream=sys.stdout,
-    )
-
-    jobs = []
-
-    for vpu_dir in sorted([x for x in glob.glob(os.path.join(CONFIGS_DIR, '*')) if os.path.isdir(x)]):
-        vpu = os.path.basename(vpu_dir)
-        for inflow in glob.glob(os.path.join(inflows_dir, f'm3_{vpu}_*.nc')):
-            jobs.append([{
-                "vpu_directory": vpu_dir,
-                "inflow_file": inflow,
-                "namelist_directory": namelists_dir,
-                "outputs_directory": outputs_dir,
-            }, ])
-
-    number_cpus = min([len(jobs), os.cpu_count()])
-    print(f'number_cpus: {number_cpus}')
-
-    with Pool(number_cpus) as p:
-        p.starmap(call_make_namelist, jobs)
+    for inflow_file in glob.glob(os.path.join(inflows_dir, f'm3_{vpu}_*.nc')):
+        create_rapid_namelist(
+            vpu_directory=os.path.join(CONFIGS_DIR, vpu),
+            inflow_file=inflow_file,
+            namelist_directory=namelists_dir,
+            outputs_directory=outputs_dir,
+        )

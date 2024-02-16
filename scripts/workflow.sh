@@ -2,6 +2,8 @@
 
 # Initialize YMD variable with current date
 YMD=$(date +%Y%m%d)
+NCPUS=$(nproc --all)
+VPUS=$(ls -1 $CONFIGS_DIR | awk -F/ '{print $NF}' | sort -V)
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -41,25 +43,26 @@ mkdir -p $FORECASTS_DIR/$YMD/logs
 mkdir -p $FORECASTS_DIR/$YMD/maptables
 
 # Calculate inflows
-python ../geoglows/prepare_inflows.py --ymd $YMD
+xargs -I {} -P $NCPUS python ../geoglows/prepare_inflows.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
 
 # Prepare namelists
-python ../geoglows/prepare_namelists.py --ymd $YMD
+xargs -I {} -P $NCPUS python ../geoglows/prepare_namelists.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
 
 # RAPID routing
-docker exec rapid python3 /mnt/scripts/runrapid.py --fcdir $FORECASTS_DIR/$YMD
+NAMELISTS=$(find $FORECASTS_DIR/$YMD/namelists -name "n*" | sort -V)
+xargs -I {} -P $NCPUS docker exec rapid python3 /mnt/scripts/runrapid.py --namelist {} <<< $NAMELISTS || exit 1
 
 # Concatenate and summarize the ensemble outputs
-./postprocess_rapid_outputs.sh -d $FORECASTS_DIR/$YMD/outputs
+xargs -I {} -P $NCPUS python ./postprocess_rapid_outputs.sh -d $FORECASTS_DIR/$YMD/outputs -v {} <<< $VPUS || exit 1
 
 # Calculate the init files
-python ../geoglows/calculate_inits.py --ymd $YMD
-
-# NetCDF to Zarr (and delete netCDFs)
-python ../geoglows/vpu_netcdfs_to_zarr.py --ymd $YMD
+xargs -I {} -P $NCPUS python ../geoglows/calculate_inits.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
 
 # Generate Esri map style tables
-python ../geoglows/generate_map_style_tables.py
+xargs -I {} -P $NCPUS python ../geoglows/generate_map_style_tables.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
+
+# NetCDF to Zarr (and delete netCDFs)
+python ../geoglows/vpu_netcdfs_to_zarr.py --ymd $YMD || exit 1
 
 # Archive inits, outputs, map tables
 ./archive_to_aws.sh

@@ -1,6 +1,5 @@
 import argparse
 import glob
-import json
 import logging
 import os
 import shutil
@@ -36,7 +35,7 @@ def netcdf_forecasts_to_zarr(ymd: str) -> None:
     with dask.config.set(**{
         'array.slicing.split_large_chunks': False,
         # set the max chunk size to 5MB
-        'array.chunk-size': '40MB',
+        'array.chunk-size': '20MB',
         # use the threads scheduler
         'scheduler': 'threads',
         # set the maximum memory target usage to 90% of total memory
@@ -44,10 +43,10 @@ def netcdf_forecasts_to_zarr(ymd: str) -> None:
         # do not allow spilling to disk
         'distributed.worker.memory.spill': False,
         # specify the amount of resources to allocate to dask workers
-        'distributed.worker.resources': {
-            'memory': 3e9,  # 1e9=1GB, this is the amount per worker
-            'cpu': os.cpu_count(),  # num CPU per worker
-        }
+        # 'distributed.worker.resources': {
+        #     'memory': 3e9,  # 1e9=1GB, this is the amount per worker
+        #     'cpu': os.cpu_count(),  # num CPU per worker
+        # }
     }):
         logging.info("Opening ensembles 1-51 datasets")
         with xr.open_mfdataset(qout_1_51_files, combine="nested", concat_dim="rivid") as ds151:
