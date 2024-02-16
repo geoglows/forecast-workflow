@@ -27,14 +27,14 @@ def netcdf_forecasts_to_zarr(ymd: str) -> None:
     FORECASTS_DIR = os.environ['FORECASTS_DIR']
     outputs_directory = os.path.join(FORECASTS_DIR, ymd, "outputs")
 
-    vpu_nums = sorted(
-        set([os.path.basename(x).split("_")[1] for x in glob.glob(os.path.join(outputs_directory, f"Qout_*_52.nc"))])
-    )
-
-    qout_1_51_files = sorted([os.path.join(outputs_directory, f"Qout_{vpu}.nc") for vpu in vpu_nums])
     qout_52_files = sorted(glob.glob(os.path.join(outputs_directory, f"Qout_*_52.nc")))
+    vpu_nums = set([os.path.basename(f).replace('.nc', '').split("_")[1] for f in qout_52_files])
+    qout_1_51_files = sorted([os.path.join(outputs_directory, f"Qout_{vpu}.nc") for vpu in vpu_nums])
     zarr_file_path = os.path.join(outputs_directory, f"Qout_{ymd}.zarr")
-    print(qout_1_51_files)
+    logging.info(qout_1_51_files)
+    logging.info(qout_52_files)
+    logging.info(zarr_file_path)
+    logging.info(vpu_nums)
 
     if os.path.exists(zarr_file_path):
         logging.info(f"Removing existing zarr file: {zarr_file_path}")

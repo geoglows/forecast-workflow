@@ -1,9 +1,7 @@
 import argparse
 import datetime
-import glob
 import os
 import subprocess
-from multiprocessing import Pool
 
 
 def timestamp():
