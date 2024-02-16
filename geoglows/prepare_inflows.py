@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     for runoff_file in runoff_files:
         ensemble_number = os.path.basename(runoff_file).split('.')[0]
-        if os.path.exists(os.path.join(inflow_dir, f'm3_{vpu}*{ensemble_number}.nc')):
+        if len(glob.glob(os.path.join(inflow_dir, f'm3_{vpu}*{ensemble_number}.nc'))):
             continue
         create_inflow_file(
             lsm_data=runoff_file,

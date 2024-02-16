@@ -43,26 +43,26 @@ mkdir -p $FORECASTS_DIR/$YMD/logs
 mkdir -p $FORECASTS_DIR/$YMD/maptables
 
 # Calculate inflows
-xargs -I {} -P $NCPUS python ../geoglows/prepare_inflows.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
+xargs -I {} -P $NCPUS python $HOME/forecast-workflow/geoglows/prepare_inflows.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
 
 # Prepare namelists
-xargs -I {} -P $NCPUS python ../geoglows/prepare_namelists.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
+xargs -I {} -P $NCPUS python $HOME/forecast-workflow/geoglows/prepare_namelists.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
 
 # RAPID routing
-NAMELISTS=$(find $FORECASTS_DIR/$YMD/namelists -name "n*" | sort -V)
+NAMELISTS=$(ls -1 $FORECASTS_DIR/$YMD/namelists | awk -F/ '{print $NF}' | sort -V)
 xargs -I {} -P $NCPUS docker exec rapid python3 /mnt/scripts/runrapid.py --fcdir $FORECASTS_DIR/$YMD --namelist {} <<< $NAMELISTS || exit 1
 
 # Concatenate and summarize the ensemble outputs
 xargs -I {} -P $NCPUS python ./postprocess_rapid_outputs.sh -d $FORECASTS_DIR/$YMD/outputs -v {} <<< $VPUS || exit 1
 
 # Calculate the init files
-xargs -I {} -P $NCPUS python ../geoglows/calculate_inits.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
+xargs -I {} -P $NCPUS python $HOME/forecast-workflow/geoglows/calculate_inits.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
 
 # Generate Esri map style tables
-xargs -I {} -P $NCPUS python ../geoglows/generate_map_style_tables.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
+xargs -I {} -P $NCPUS python $HOME/forecast-workflow/geoglows/generate_map_style_tables.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
 
 # NetCDF to Zarr (and delete netCDFs)
-python ../geoglows/vpu_netcdfs_to_zarr.py --ymd $YMD || exit 1
+python $HOME/forecast-workflow/geoglows/vpu_netcdfs_to_zarr.py --ymd $YMD || exit 1
 
 # Archive inits, outputs, map tables
 ./archive_to_aws.sh
