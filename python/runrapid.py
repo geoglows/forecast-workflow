@@ -11,6 +11,7 @@ def timestamp():
 def run_rapid_for_namelist_file(namelist_file: str,
                                 logdir: str,
                                 path_rapid_exec: str = '/home/rapid/src/rapid', ) -> None:
+    print(f'Running RAPID for {namelist_file}')
     try:
         vpuno = os.path.basename(namelist_file).split("_")[1]
         label = os.path.basename(namelist_file).split("_")[2]
