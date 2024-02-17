@@ -60,6 +60,7 @@ xargs -I {} -P $NCPUS python $HOME/forecast-workflow/python/calculate_inits.py -
 
 # Generate Esri map style tables
 xargs -I {} -P $NCPUS python $HOME/forecast-workflow/python/generate_vpu_map_tables.py --ymd $YMD --vpu {} <<< $VPUS || exit 1
+python $HOME/forecast-workflow/python/generate_global_map_tables.py --ymd $YMD || exit 1
 
 # NetCDF to Zarr (and delete netCDFs)
 python $HOME/forecast-workflow/python/vpu_netcdfs_to_zarr.py --ymd $YMD || exit 1
