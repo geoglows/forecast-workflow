@@ -7,6 +7,7 @@ import pandas as pd
 
 FORECASTS_DIR = os.environ['FORECASTS_DIR']
 CONFIGS_DIR = os.environ['CONFIGS_DIR']
+INITS_DIR = os.environ['INITS_DIR']
 
 
 def rapid_namelist(
@@ -228,14 +229,25 @@ if __name__ == '__main__':
     print(f'namelists_dir: {namelists_dir}')
     print(f'outputs_dir: {outputs_dir}')
 
+    qinit_file = None
+    for day in range(11):
+        possible_init_date = (pd.to_datetime(ymd) - pd.Timedelta(days=day)).strftime('%Y%m%d')
+        possible_qinit_file = os.path.join(INITS_DIR, vpu, f'qinit_{vpu}_{possible_init_date}.nc')
+        if os.path.exists(possible_qinit_file):
+            qinit_file = possible_qinit_file
+            break
+
+    if not qinit_file:
+        print(f'No qinit file found for {vpu} within 10 days of {ymd}')
+
     for inflow_file in glob.glob(os.path.join(inflows_dir, f'm3_{vpu}_*.nc')):
         ensemble_number = os.path.basename(inflow_file).replace('.nc', '').split('_')[-1]
-        # todo determine the init file to use
         create_rapid_namelist(
             vpu_directory=os.path.join(CONFIGS_DIR, vpu),
             inflow_file=inflow_file,
             namelist_directory=namelists_dir,
             outputs_directory=outputs_dir,
+            qinit_file=qinit_file,
             qfinal_file=None,
             file_label=ensemble_number,
         )
