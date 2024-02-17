@@ -18,6 +18,7 @@ dependencies:
   - numpy
   - numcodecs
   - pandas
+  - polars
   - s3fs
   - xarray
   - zarr
