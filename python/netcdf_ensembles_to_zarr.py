@@ -1,6 +1,5 @@
 import argparse
 import glob
-import logging
 import os
 import shutil
 import sys
@@ -9,12 +8,6 @@ import dask
 import numpy as np
 import xarray as xr
 from numcodecs import Blosc
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(message)s",
-    stream=sys.stdout,
-)
 
 
 def netcdf_forecasts_to_zarr(ymd: str) -> None:
@@ -31,13 +24,8 @@ def netcdf_forecasts_to_zarr(ymd: str) -> None:
     vpu_nums = set([os.path.basename(f).replace('.nc', '').split("_")[1] for f in qout_52_files])
     qout_1_51_files = sorted([os.path.join(outputs_directory, f"Qout_{vpu}.nc") for vpu in vpu_nums])
     zarr_file_path = os.path.join(outputs_directory, f"Qout_{ymd}.zarr")
-    logging.info(qout_1_51_files)
-    logging.info(qout_52_files)
-    logging.info(zarr_file_path)
-    logging.info(vpu_nums)
 
     if os.path.exists(zarr_file_path):
-        logging.info(f"Removing existing zarr file: {zarr_file_path}")
         shutil.rmtree(zarr_file_path)
 
     with dask.config.set(**{
@@ -56,22 +44,22 @@ def netcdf_forecasts_to_zarr(ymd: str) -> None:
             'cpu': os.cpu_count(),  # num CPU per worker
         }
     }):
-        logging.info("Opening ensembles 1-51 datasets")
+        print("Opening ensembles 1-51 datasets")
         with xr.open_mfdataset(qout_1_51_files, combine="nested", concat_dim="rivid") as ds151:
-            logging.info("Assigning the ensemble coordinate variable")
+            print("Assigning the ensemble coordinate variable")
             ds151 = ds151.assign_coords(ensemble=np.arange(1, 52))
-            logging.info("Opening ensemble 52 dataset")
+            print("Opening ensemble 52 dataset")
             with xr.open_mfdataset(qout_52_files, combine="nested", concat_dim="rivid") as ds52:
-                logging.info("Assigning the ensemble coordinate variable")
+                print("Assigning the ensemble coordinate variable")
                 ds52 = ds52.assign_coords(ensemble=52)
 
-                logging.info("Concatenating 1-51 and 52 datasets")
+                print("Concatenating 1-51 and 52 datasets")
                 ds = xr.concat([ds151, ds52], dim="ensemble")
 
-                logging.info("Configuring compression")
+                print("Configuring compression")
                 compressor = Blosc(cname="zstd", clevel=3, shuffle=Blosc.BITSHUFFLE)
                 encoding = {'Qout': {"compressor": compressor}}
-                logging.info("Writing to zarr")
+                print("Writing to zarr")
                 (
                     ds
                     .drop_vars(["crs", "lat", "lon", "time_bnds", "Qout_err"])
@@ -86,7 +74,7 @@ def netcdf_forecasts_to_zarr(ymd: str) -> None:
                         encoding=encoding,
                     )
                 )
-                logging.info("Done")
+                print("Done")
 
 
 if __name__ == "__main__":

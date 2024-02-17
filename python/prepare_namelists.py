@@ -223,12 +223,6 @@ if __name__ == '__main__':
     os.makedirs(namelists_dir, exist_ok=True)
     os.makedirs(outputs_dir, exist_ok=True)
 
-    print(f'ymd: {ymd}')
-    print(f'FORECASTS_DIR: {FORECASTS_DIR}')
-    print(f'inflows_dir: {inflows_dir}')
-    print(f'namelists_dir: {namelists_dir}')
-    print(f'outputs_dir: {outputs_dir}')
-
     qinit_file = None
     for day in range(11):
         possible_init_date = (pd.to_datetime(ymd) - pd.Timedelta(days=day)).strftime('%Y%m%d')
@@ -236,9 +230,6 @@ if __name__ == '__main__':
         if os.path.exists(possible_qinit_file):
             qinit_file = possible_qinit_file
             break
-
-    if not qinit_file:
-        print(f'No qinit file found for {vpu} within 10 days of {ymd}')
 
     for inflow_file in glob.glob(os.path.join(inflows_dir, f'm3_{vpu}_*.nc')):
         ensemble_number = os.path.basename(inflow_file).replace('.nc', '').split('_')[-1]

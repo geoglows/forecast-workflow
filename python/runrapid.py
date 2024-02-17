@@ -12,7 +12,6 @@ def run_rapid_for_namelist_file(namelist_file: str,
                                 logdir: str,
                                 path_rapid_exec: str = '/home/rapid/src/rapid', ) -> None:
     try:
-        print(f'Running RAPID for {namelist_file}')
         vpuno = os.path.basename(namelist_file).split("_")[1]
         label = os.path.basename(namelist_file).split("_")[2]
         with open(os.path.join(logdir, f"{vpuno}_{label}.log"), 'w') as f:
@@ -32,7 +31,6 @@ def run_rapid_for_namelist_file(namelist_file: str,
 
 
 if __name__ == '__main__':
-    print('runrapid.py')
     parser = argparse.ArgumentParser()
     parser.add_argument('--fcdir', type=str, required=True,
                         help='Path to forecast working directory', )

@@ -14,7 +14,6 @@ RUNOFFS_DIR = os.environ['RUNOFFS_DIR']
 FORECASTS_DIR = os.environ['FORECASTS_DIR']
 
 if __name__ == '__main__':
-    print('prepare_inflows.py')
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--ymd',
@@ -37,12 +36,6 @@ if __name__ == '__main__':
     inflow_dir = os.path.join(FORECASTS_DIR, ymd, 'inflows')
     vpu_config_dir = os.path.join(CONFIGS_DIR, vpu)
 
-    print(f'CONFIGS_DIR: {CONFIGS_DIR}')
-    print(f'RUNOFFS_DIR: {RUNOFFS_DIR}')
-    print(f'FORECASTS_DIR: {FORECASTS_DIR}')
-    print(f'ymd: {ymd}')
-    print(f'runoff_files: {runoff_files}')
-
     # make the inflow/YMD directory
     os.makedirs(os.path.join(FORECASTS_DIR, ymd, 'inflows'), exist_ok=True)
 
@@ -57,6 +50,7 @@ if __name__ == '__main__':
             y_var='lat',
             x_var='lon',
             time_var='time',
+            runoff_var='RO',
             file_label=ensemble_number,
             force_positive_runoff=True,
         )

@@ -42,11 +42,6 @@ def netcdf_forecasts_to_zarr(ymd: str) -> None:
         'distributed.worker.memory.target': 0.80,
         # do not allow spilling to disk
         'distributed.worker.memory.spill': False,
-        # specify the amount of resources to allocate to dask workers
-        # 'distributed.worker.resources': {
-        #     'memory': 3e9,  # 1e9=1GB, this is the amount per worker
-        #     'cpu': os.cpu_count(),  # num CPU per worker
-        # }
     }):
         logging.info("Opening ensembles 1-51 datasets")
         with xr.open_mfdataset(qout_1_51_files, combine="nested", concat_dim="rivid") as ds151:

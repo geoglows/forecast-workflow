@@ -20,10 +20,6 @@ def init_file_from_forecast_averages(ymd: str, vpu: str or int) -> None:
 
     os.makedirs(os.path.join(INITS_DIR, vpu), exist_ok=True)
 
-    print(f'Creating initial flow file for {vpu} for initialization date of {init_date_string}')
-    print(f'Using average flow file: {average_flow_file}')
-    print(f'Output file: {init_output_file}')
-
     with xr.open_dataset(average_flow_file) as ds:
         # select the timestep 24 hours after the ymd variable
         init_flows = ds.Qout.sel(time=init_date).values
