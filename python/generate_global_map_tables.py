@@ -3,7 +3,7 @@ import glob
 import logging
 import os
 
-import pandas as pd
+import polars as pl
 from natsort import natsorted
 
 FORECASTS_DIR = os.environ['FORECASTS_DIR']
@@ -16,17 +16,16 @@ def combine_esri_tables(ymd: str) -> None:
 
     # select all outputs/VPUNUMBER/DATE/map_style_table*.parquet files
     logging.info("Concatenating parquet map_style_tables from each VPU")
-    global_map_style_df = pd.concat([pd.read_parquet(x) for x in vpu_parquet_tables])
+    global_map_style_df = pl.concat([pl.read_parquet(x) for x in vpu_parquet_tables])
 
     # replace nans with 0
     logging.info("Preparing concatenated DF")
-    global_map_style_df.fillna(0, inplace=True)
-    global_map_style_df.set_index("timestamp", inplace=True)
+    global_map_style_df = global_map_style_df.fill_nan(0)
 
     # for each unique date in the timestamp column, create a new dataframe
-    for date in global_map_style_df.index.unique():
+    for date in global_map_style_df['timestamp'].unique():
         file_save_path = os.path.join(global_csv_tables_dir, f'mapstyletable_{date.strftime("%Y-%m-%d-%H")}.csv')
-        global_map_style_df.loc[date].to_csv(file_save_path, index=False)
+        global_map_style_df.filter(pl.col('timestamp') == date).write_csv(file_save_path)
 
     for parquet_table in vpu_parquet_tables:
         os.remove(parquet_table)
