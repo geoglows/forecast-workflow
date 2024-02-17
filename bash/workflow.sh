@@ -22,9 +22,6 @@ done
 echo "YMD is set to: $YMD"
 export YMD
 
-VPUS=$(ls -1 $CONFIGS_DIR | awk -F/ '{print $NF}' | sort -V)
-echo "Found ${#VPUS[@]} VPUs"
-
 # Download the latest IFS grids from s3 bucket
   # compare the last downloaded date, and the date available on the s3 bucket
   # if the date available on the s3 bucket is newer than the last downloaded date, download the new data
