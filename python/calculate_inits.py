@@ -16,9 +16,9 @@ def init_file_from_forecast_averages(ymd: str, vpu: str or int) -> None:
     init_date = pd.to_datetime(ymd) + pd.Timedelta(days=1)
     init_date_string = init_date.strftime('%Y%m%d')
     average_flow_file = os.path.join(FORECASTS_DIR, ymd, 'outputs', f'nces_avg_{vpu}.nc')
-    init_output_file = os.path.join(INITS_DIR, vpu, f'Qinit_{vpu}_{init_date_string}.nc')
+    init_output_file = os.path.join(INITS_DIR, init_date_string, f'Qinit_{vpu}_{init_date_string}.nc')
 
-    os.makedirs(os.path.join(INITS_DIR, vpu), exist_ok=True)
+    os.makedirs(os.path.join(INITS_DIR, init_date_string), exist_ok=True)
 
     with xr.open_dataset(average_flow_file) as ds:
         # select the timestep 24 hours after the ymd variable

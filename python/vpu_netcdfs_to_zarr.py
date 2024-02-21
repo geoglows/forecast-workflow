@@ -31,7 +31,7 @@ def netcdf_forecasts_to_zarr(ymd: str) -> None:
     qout_52_files = natsorted(glob.glob(os.path.join(outputs_directory, f"Qout_*_52.nc")))
     qout_1_51_files = natsorted([os.path.join(outputs_directory, f"Qout_{vpu}.nc") for vpu in vpu_nums])
     qout_1_51_files = [x for x in qout_1_51_files if os.path.exists(x)]
-    zarr_file_path = os.path.join(outputs_directory, f"Qout_{ymd}.zarr")
+    zarr_file_path = os.path.join(outputs_directory, f"{ymd}.zarr")
 
     if os.path.exists(zarr_file_path):
         shutil.rmtree(zarr_file_path)

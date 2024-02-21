@@ -4,6 +4,7 @@ import os
 
 import netCDF4
 import pandas as pd
+from natsort import natsorted
 
 FORECASTS_DIR = os.environ['FORECASTS_DIR']
 CONFIGS_DIR = os.environ['CONFIGS_DIR']
@@ -224,12 +225,16 @@ if __name__ == '__main__':
     os.makedirs(outputs_dir, exist_ok=True)
 
     qinit_file = None
+    available_qinit_dates = [os.path.basename(x) for x in glob.glob(os.path.join(INITS_DIR, '*'))]
+    available_qinit_dates = [x for x in available_qinit_dates if os.path.isdir(os.path.join(INITS_DIR, x))]
+    available_qinit_dates = natsorted(available_qinit_dates, reverse=True)
     for day in range(11):
         possible_init_date = (pd.to_datetime(ymd) - pd.Timedelta(days=day)).strftime('%Y%m%d')
-        possible_qinit_file = os.path.join(INITS_DIR, vpu, f'qinit_{vpu}_{possible_init_date}.nc')
-        if os.path.exists(possible_qinit_file):
-            qinit_file = possible_qinit_file
-            break
+        if possible_init_date in available_qinit_dates:
+            possible_qinit_file = os.path.join(INITS_DIR, possible_init_date, f'qinit_{vpu}_{possible_init_date}.nc')
+            if os.path.exists(possible_qinit_file):
+                qinit_file = possible_qinit_file
+                break
 
     for inflow_file in glob.glob(os.path.join(inflows_dir, f'm3_{vpu}_*.nc')):
         ensemble_number = os.path.basename(inflow_file).replace('.nc', '').split('_')[-1]

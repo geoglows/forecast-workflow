@@ -68,4 +68,9 @@ python $HOME/forecast-workflow/python/vpu_netcdfs_to_zarr.py --ymd $YMD || exit 
 
 # Archive inits, outputs, map tables
 echo "Archiving inits, outputs, map tables"
-./archive_to_aws.sh
+../bash/archive_to_s3.sh
+
+echo "Clearing forecast directory"
+../bash/clean_forecast_directory.sh
+
+echo "Forecast workflow completed successfully"
